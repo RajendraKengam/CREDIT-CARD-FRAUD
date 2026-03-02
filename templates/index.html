@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Credit Card Fraud Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .transaction-form {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .transaction-form h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .transaction-form .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .transaction-form .form-group label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .transaction-form .form-group input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+        .transaction-form .check-btn {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .transaction-form .check-btn:hover {
+            background-color: #0056b3;
+        }
+        .transaction-form .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #d1d1d1;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        #add-transaction-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Credit Card Fraud Detection</h1>
+        <p>Add up to 5 transactions and enter their data to check for fraud.</p>
+        <button id="add-transaction-btn">Add Transaction</button>
+        <div id="transactions-container"></div>
+        <a href="{{ url_for('logout') }}" style="margin-top: 20px; display: inline-block;">Logout</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addTransactionBtn = document.getElementById('add-transaction-btn');
+            const transactionsContainer = document.getElementById('transactions-container');
+            let transactionCount = 0;
+
+            addTransactionBtn.addEventListener('click', function() {
+                if (transactionCount >= 5) {
+                    alert("You can add a maximum of 5 transactions.");
+                    return;
+                }
+                transactionCount++;
+
+                const transactionId = `transaction-${transactionCount}`;
+                const transactionDiv = document.createElement('div');
+                transactionDiv.classList.add('transaction-form');
+                transactionDiv.id = transactionId;
+                transactionDiv.innerHTML = `
+                    <h4>Transactions</h4>
+                    <div class="form-group"><label for="Date-${transactionCount}">Transaction Date:</label><input type="date" id="Date-${transactionCount}" class="transaction-input" name="Date" required></div>
+                    <div class="form-group"><label for="Amount-${transactionCount}">Amount:</label><input type="number" id="Amount-${transactionCount}" class="transaction-input" name="Amount" placeholder="e.g., 129.99" required></div>
+                    <div class="form-group"><label for="V1-${transactionCount}">Transaction 1:</label><input type="number" id="V1-${transactionCount}" class="transaction-input" name="V1" step="any" placeholder="e.g., -1.3598" required></div>
+                    <div class="form-group"><label for="V2-${transactionCount}">Transaction 2:</label><input type="number" id="V2-${transactionCount}" class="transaction-input" name="V2" step="any" placeholder="e.g., -0.0727" required></div>
+                    <div class="form-group"><label for="V3-${transactionCount}">Transaction 3:</label><input type="number" id="V3-${transactionCount}" class "transaction-input" name= "V3" step= "any" placeholder= "e.g., 2.5363" required></div>
+                    <div class="form-group"><label for="V4-${transactionCount}">Transaction 4:</label><input type="number" id="V4-${transactionCount}" class="transaction-input" name="V4" step="any" placeholder="e.g., 1.3781" required></div>
+                    <button class="check-btn">Check for Fraud</button>
+                    <div class="result"></div>
+                `;
+
+                transactionsContainer.appendChild(transactionDiv);
+
+                if (transactionCount >= 5) {
+                    addTransactionBtn.disabled = true;
+                }
+
+                transactionDiv.querySelector('.check-btn').addEventListener('click', function() {
+                    const resultDiv = transactionDiv.querySelector('.result');
+                    const inputs = transactionDiv.querySelectorAll('.transaction-input');
+                    let data = {};
+                    let allFieldsValid = true;
+
+                    inputs.forEach(input => {
+                        if (!input.value) { allFieldsValid = false; }
+                        if (input.type === 'number') {
+                            data[input.name] = parseFloat(input.value) || 0;
+                        } else {
+                            data[input.name] = input.value;
+                        }
+                    });
+
+                    if (!allFieldsValid) {
+                        resultDiv.innerHTML = `<p style="color: red;">Please fill in all fields for this transaction.</p>`;
+                        return;
+                    }
+
+                    resultDiv.innerHTML = '<p>Checking...</p>';
+
+                    fetch("{{ url_for('predict') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                        } else {
+                            const predictionText = data.prediction;
+                            const resultColor = predictionText === 'Fraud' ? 'red' : 'green';
+                            const imageUrl = predictionText === 'Fraud' ? 'https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/1f8b48bd-ad38-4af1-a967-3a1ddaf59072.png' : 'https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/0d267b28-1689-4e03-bf84-83d6a9084f68.png';
+
+                            resultDiv.innerHTML = `
+                                <p>Status: <strong style="color: ${resultColor};">${predictionText}</strong></p>
+                                <img src="${imageUrl}" alt="${predictionText}" style="max-height: 100px; display: block; margin-top: 10px;">`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        resultDiv.innerHTML = `<p style="color: red;">An error occurred while processing your request.</p>`;
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
