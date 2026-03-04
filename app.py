@@ -3,8 +3,8 @@ import os
 from models import db, Prediction, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from flasgger import Swagger
-from marshmallow import Schema, fields, ValidationError
+from flasgger import Swagger, swag_from
+from marshmallow import Schema, fields, ValidationError, EXCLUDE
 from dotenv import load_dotenv
 import joblib
 import numpy as np
@@ -49,6 +49,10 @@ except FileNotFoundError:
 # --- Input Validation Schema ---
 class PredictionInputSchema(Schema):
     Amount = fields.Float(required=True, validate=lambda x: x > 0)
+
+    class Meta:
+        # Ignore unknown fields in the input
+        unknown = EXCLUDE
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -137,7 +141,9 @@ def predict():
         validated_data = schema.load(data)
         amount = validated_data['Amount']
     except ValidationError as err:
-        return jsonify({'error': err.messages}), 400
+        # Flatten Marshmallow's error dictionary for a user-friendly message
+        error_message = ". ".join([f"{field}: {', '.join(messages)}" for field, messages in err.messages.items()])
+        return jsonify({'error': error_message}), 400
 
     # Prediction logic
     if model:

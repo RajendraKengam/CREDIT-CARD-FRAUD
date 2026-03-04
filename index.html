@@ -87,7 +87,18 @@
                         predictionImage.src = 'https://cdn-icons-png.flaticon.com/512/2438/2438078.png';
                     }
                 } else {
-                    alert(data.error || 'An error occurred');
+                    let errorMessage = 'An error occurred.';
+                    if (data.error) {
+                        // Handle both string and object errors from the API for robustness
+                        if (typeof data.error === 'object') {
+                            errorMessage = Object.keys(data.error)
+                                .map(key => `${key}: ${Array.isArray(data.error[key]) ? data.error[key].join(', ') : data.error[key]}`)
+                                .join('\n');
+                        } else {
+                            errorMessage = data.error;
+                        }
+                    }
+                    alert(errorMessage);
                 }
             } catch (error) {
                 console.error('Error:', error);
