@@ -31,7 +31,7 @@ class Prediction(db.Model):
     payload = db.Column(db.Text, nullable=False)
     prediction = db.Column(db.Integer, nullable=False)
     fraud_probability = db.Column(db.Float, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
         return f"<Prediction id={self.id} pred={self.prediction} prob={self.fraud_probability:.4f}>"

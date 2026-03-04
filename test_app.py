@@ -5,7 +5,7 @@ import os
 # Add parent directory to path to import app
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import app, db, User  # noqa: E402
+from app import app, db  # noqa: E402
 
 @pytest.fixture
 def client():
@@ -35,6 +35,12 @@ def test_signup_and_login(client):
     assert rv.status_code == 200
     assert b'TestUser' in rv.data  # Assuming dashboard shows username
 
+def test_predict_unauthenticated(client):
+    """Test that /predict redirects when not logged in."""
+    rv = client.post('/predict', json={'Amount': 100})
+    assert rv.status_code == 302
+    assert '/login' in rv.location
+
 def test_predict_endpoint_success_and_errors(client):
     """Test the /predict endpoint for success and various error conditions."""
     # Signup and login a user to get an authenticated session
@@ -42,14 +48,21 @@ def test_predict_endpoint_success_and_errors(client):
     client.post('/login', data=dict(name='ApiUser', password='password'))
 
     # Test a successful prediction
-    rv = client.post('/predict', json={'Amount': 100})
+    rv = client.post('/predict', json={'Amount': 100.0})
     assert rv.status_code == 200
     json_data = rv.get_json()
     assert json_data['prediction'] == 'Not Fraud'
     assert 'probability' in json_data
 
+    # Test a successful prediction (Fraud)
+    rv = client.post('/predict', json={'Amount': 5000.0})
+    assert rv.status_code == 200
+    json_data = rv.get_json()
+    assert json_data['prediction'] == 'Fraud'
+    assert 'probability' in json_data
+
     # Test a successful prediction with extra, unknown fields
-    rv = client.post('/predict', json={'Amount': 200, 'V1': 0.5, 'V2': -1.2})
+    rv = client.post('/predict', json={'Amount': 200.0, 'V1': 0.5, 'V2': -1.2})
     assert rv.status_code == 200
     json_data = rv.get_json()
     assert json_data['prediction'] == 'Not Fraud'

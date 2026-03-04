@@ -1,76 +1,100 @@
-# Flask Fraud Detection API
+# Fraud Detection Web Application
 
-This is a simple Flask web application that provides a machine learning-powered API for fraud detection. It includes user authentication, prediction history, and an API documentation interface using Swagger.
+This is a full-stack web application built with Flask and Scikit-learn that provides real-time fraud detection for financial transactions. It features a complete user authentication system, a RESTful API for predictions, and a dynamic frontend.
 
-## Features
+## Key Features
 
-*   **User Management**: User signup and login system.
-*   **Authentication**: Session-based authentication using Flask-Login.
-*   **Fraud Detection**: A `/predict` endpoint that uses a pre-trained Random Forest model to predict fraudulent transactions based on the amount.
-*   **Prediction History**: Stores every prediction made by a user in a database.
-*   **Database**: Uses SQLite by default, configured with Flask-SQLAlchemy and Flask-Migrate.
-*   **API Documentation**: Interactive API documentation available at `/apidocs` via Flasgger (Swagger).
-*   **Configuration**: Uses environment variables for configuration.
+-   **Full User Authentication**: Secure user signup, login, and logout functionality using Flask-Login. Passwords are securely hashed.
+-   **ML-Powered Prediction API**: A core `/predict` endpoint that uses a pre-trained Scikit-learn model to classify transactions as fraudulent or not.
+-   **Dynamic Frontend**: A responsive, single-page user interface built with Bootstrap and JavaScript that communicates with the backend via AJAX, providing instant feedback without page reloads.
+-   **Database Integration**: Uses SQLAlchemy and SQLite to persist user data and a complete history of all predictions made.
+-   **Robust Validation**: Employs Marshmallow for server-side validation of API inputs, ensuring data integrity and providing clear error messages.
+-   **Comprehensive Testing**: Includes a full test suite using `pytest` to cover authentication, API endpoints, and error handling.
+-   **API Documentation**: Integrated Swagger UI for interactive API documentation.
+-   **Easy Model Training**: A simple script (`train_model.py`) is provided to generate synthetic data and train the classification model.
+
+## Tech Stack
+
+-   **Backend**: Flask, Flask-SQLAlchemy, Flask-Migrate, Flask-Login, Marshmallow
+-   **ML**: Scikit-learn, Numpy, Joblib
+-   **Frontend**: HTML, Bootstrap 5, JavaScript (Fetch API)
+-   **Database**: SQLite
+-   **API Docs**: Flasgger (Swagger)
+-   **Testing**: Pytest
+-   **Deployment**: Gunicorn (recommended)
 
 ## Project Structure
 
 ```
-├── app.py              # Main Flask application
-├── models.py           # SQLAlchemy database models
-├── train_model.py      # Script to train the ML model
-├── test_app.py         # Pytest tests for the application
-├── requirements.txt    # Python dependencies
-├── templates/          # HTML templates
+.
+├── templates/
 │   ├── index.html
 │   ├── login.html
 │   └── signup.html
-└── model.pkl           # (Generated) Trained ML model
+├── .gitignore
+├── app.py
+├── models.py
+├── requirements.txt
+├── test_app.py
+├── train_model.py
+├── .env.example
+└── README.md
 ```
 
 ## Setup and Installation
 
 Follow these steps to get the application running locally.
 
-### 1. Clone the Repository
+### 1. Prerequisites
+
+-   Python 3.8+
+-   `pip` and `venv`
+
+### 2. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd <repository-folder>
+git clone https://github.com/your-username/your-repository-name.git
+cd your-repository-name
 ```
 
-### 2. Create a Virtual Environment
+### 3. Set Up a Virtual Environment
 
-It's recommended to use a virtual environment to manage dependencies.
+It's highly recommended to use a virtual environment to manage project dependencies.
 
-```bash
-# For Windows
-python -m venv venv
-.\venv\Scripts\activate
+-   **Windows (Command Prompt)**:
+    ```bash
+    python -m venv venv
+    .\venv\Scripts\activate
+    ```
+-   **macOS / Linux**:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-# For macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
+### 4. Install Dependencies
 
-### 3. Install Dependencies
-
-Install all the required packages using `pip`.
+Install all the required Python packages.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set Up Environment Variables
+### 5. Configure Environment Variables
 
 Create a `.env` file in the root directory by copying the example file.
 
 ```bash
+# On Windows (Command Prompt)
 copy .env.example .env
+
+# On macOS / Linux
+cp .env.example .env
 ```
 
-Then, edit the `.env` file to set your own secret key.
+Open the `.env` file and change the `SECRET_KEY` to a new, random, and secure string. This is critical for session security.
 
-### 5. Train the Machine Learning Model
+### 6. Train the Machine Learning Model
 
 Run the training script to generate the `model.pkl` file.
 
@@ -78,7 +102,9 @@ Run the training script to generate the `model.pkl` file.
 python train_model.py
 ```
 
-### 6. Run the Application
+### 7. Run the Application
+
+You can now start the Flask development server.
 
 ```bash
 flask run
@@ -88,7 +114,7 @@ The application will be available at `http://127.0.0.1:5000`.
 
 ## Running Tests
 
-To run the automated tests, use `pytest`.
+To ensure everything is working as expected, run the test suite:
 
 ```bash
 pytest

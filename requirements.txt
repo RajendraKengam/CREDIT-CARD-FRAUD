@@ -2,9 +2,10 @@ Flask
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-Login
-flasgger
-marshmallow
-python-dotenv
 scikit-learn
 numpy
+marshmallow
+flasgger
+python-dotenv
 pytest
+gunicorn
