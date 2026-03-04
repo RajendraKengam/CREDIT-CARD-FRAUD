@@ -1,90 +1,95 @@
-# Fraud Detection Flask App
+# Flask Fraud Detection API
 
-This is a robust web application built with Flask for fraud detection. It integrates a Machine Learning model (Random Forest), provides a Swagger API, includes user authentication, and supports Docker deployment.
+This is a simple Flask web application that provides a machine learning-powered API for fraud detection. It includes user authentication, prediction history, and an API documentation interface using Swagger.
 
 ## Features
 
-- **Machine Learning**:
-    - Uses `scikit-learn` to train a Random Forest Classifier.
-    - Predicts fraud probability based on transaction amount.
-- **API Documentation**:
-    - Integrated **Swagger UI** (via Flasgger) to interactively test the API.
-- **DevOps & Deployment**:
-    - **Dockerized** application with `docker-compose` support.
-    - Production-ready server using **Gunicorn**.
-- **Backend**:
-    - **Flask-Migrate** for database schema management.
-    - **Marshmallow** for input validation.
-    - **SQLite** database for storing users and prediction history.
-- **Authentication**:
-    - User Signup/Login with password hashing.
-    - Session-based authentication for the dashboard.
+*   **User Management**: User signup and login system.
+*   **Authentication**: Session-based authentication using Flask-Login.
+*   **Fraud Detection**: A `/predict` endpoint that uses a pre-trained Random Forest model to predict fraudulent transactions based on the amount.
+*   **Prediction History**: Stores every prediction made by a user in a database.
+*   **Database**: Uses SQLite by default, configured with Flask-SQLAlchemy and Flask-Migrate.
+*   **API Documentation**: Interactive API documentation available at `/apidocs` via Flasgger (Swagger).
+*   **Configuration**: Uses environment variables for configuration.
 
 ## Project Structure
 
 ```
-.
-├── app.py              # Main Flask application logic
+├── app.py              # Main Flask application
 ├── models.py           # SQLAlchemy database models
+├── train_model.py      # Script to train the ML model
+├── test_app.py         # Pytest tests for the application
 ├── requirements.txt    # Python dependencies
-├── static/             # Static files (CSS, JS)
-│   └── login.css
-└── templates/          # HTML templates
-    ├── index.html
-    ├── login.html
-    └── signup.html
+├── templates/          # HTML templates
+│   ├── index.html
+│   ├── login.html
+│   └── signup.html
+└── model.pkl           # (Generated) Trained ML model
 ```
 
 ## Setup and Installation
 
-### Prerequisites
+Follow these steps to get the application running locally.
 
-- Python 3.x
-- `pip` and `venv`
+### 1. Clone the Repository
 
-### Installation
+```bash
+git clone <your-repository-url>
+cd <repository-folder>
+```
 
-1.  **Clone the repository** (or download the source code).
-    ```bash
-    # git clone <repository-url>
-    # cd <repository-folder>
-    ```
+### 2. Create a Virtual Environment
 
-2.  **Create and activate a virtual environment**:
+It's recommended to use a virtual environment to manage dependencies.
 
-    - On Windows:
-      ```bash
-      python -m venv .venv
-      .\.venv\Scripts\activate
-      ```
+```bash
+# For Windows
+python -m venv venv
+.\venv\Scripts\activate
 
-    - On macOS and Linux:
-      ```bash
-      python3 -m venv .venv
-      source .venv/bin/activate
-      ```
+# For macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
 
-3.  **Install the dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+### 3. Install Dependencies
 
-## How to Run
+Install all the required packages using `pip`.
 
-1.  **Run the Flask application**:
-    ```bash
-    python app.py
-    ```
-    The application will start in debug mode and be accessible at `http://127.0.0.1:5000`.
+```bash
+pip install -r requirements.txt
+```
 
-2.  **Access the application**:
-    - Open your web browser and navigate to `http://127.0.0.1:5000`.
-    - You will be redirected to the login page.
-    - If you don't have an account, click the "Sign Up" link to create one.
-    - After signing up, you can log in with your credentials to access the main dashboard.
+### 4. Set Up Environment Variables
 
-## How It Works
+Create a `.env` file in the root directory by copying the example file.
 
-- **Authentication**: The app uses session-based authentication. After a successful login, the user's ID is stored in the session.
-- **Database**: The first time you run the app, a SQLite database file named `predictions.db` will be created in the project directory.
-- **Prediction Logic**: The `/predict` endpoint currently contains dummy logic. In a real-world scenario, this is where you would load a trained machine learning model (e.g., from scikit-learn, TensorFlow, or PyTorch) to make predictions based on the input data.
+```bash
+copy .env.example .env
+```
+
+Then, edit the `.env` file to set your own secret key.
+
+### 5. Train the Machine Learning Model
+
+Run the training script to generate the `model.pkl` file.
+
+```bash
+python train_model.py
+```
+
+### 6. Run the Application
+
+```bash
+flask run
+```
+
+The application will be available at `http://127.0.0.1:5000`.
+
+## Running Tests
+
+To run the automated tests, use `pytest`.
+
+```bash
+pytest
+```

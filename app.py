@@ -6,8 +6,9 @@ from flask_migrate import Migrate
 from flasgger import Swagger
 from marshmallow import Schema, fields, ValidationError
 from dotenv import load_dotenv
-import pickle
+import joblib
 import numpy as np
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 load_dotenv()
 
@@ -25,6 +26,15 @@ db.init_app(app)
 migrate = Migrate(app, db)
 swagger = Swagger(app)
 
+# --- Flask-Login Configuration ---
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 # Create database tables if they don't exist
 with app.app_context():
     db.create_all()
@@ -32,8 +42,7 @@ with app.app_context():
 # --- Load ML Model ---
 model = None
 try:
-    with open(os.path.join(basedir, 'model.pkl'), 'rb') as f:
-        model = pickle.load(f)
+    model = joblib.load(os.path.join(basedir, 'model.pkl'))
 except FileNotFoundError:
     print("Warning: model.pkl not found. Predictions will use dummy logic.")
 
@@ -41,8 +50,6 @@ except FileNotFoundError:
 class PredictionInputSchema(Schema):
     Amount = fields.Float(required=True, validate=lambda x: x > 0)
 
-# For demonstration, we'll use hardcoded credentials.
-# In a real-world application, use a database and hashed passwords.
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -53,8 +60,7 @@ def login():
         user = User.query.filter_by(name=name).first()
 
         if user and user.check_password(password):
-            session['logged_in'] = True
-            session['user_id'] = user.id
+            login_user(user)
             return redirect(url_for('index'))
         else:
             error = 'Invalid credentials. Please try again.'
@@ -88,17 +94,15 @@ def signup():
     return render_template('signup.html', error=error)
 
 @app.route('/')
+@login_required
 def index():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+    # current_user is available automatically
+    predictions = Prediction.query.filter_by(user_id=current_user.id).order_by(Prediction.timestamp.desc()).all()
     
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    predictions = Prediction.query.filter_by(user_id=user_id).order_by(Prediction.timestamp.desc()).all()
-    
-    return render_template('index.html', user=user, predictions=predictions)
+    return render_template('index.html', user=current_user, predictions=predictions)
 
 @app.route('/predict', methods=['POST'])
+@login_required
 def predict():
     """
     Fraud Detection Endpoint
@@ -123,9 +127,6 @@ def predict():
       401:
         description: Unauthorized
     """
-    if not session.get('logged_in'):
-        return jsonify({'error': 'Unauthorized'}), 401
-
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Invalid input'}), 400
@@ -162,7 +163,7 @@ def predict():
         payload=str(data),
         prediction=prediction_result,
         fraud_probability=probability,
-        user_id=session.get('user_id')
+        user_id=current_user.id
     )
     db.session.add(new_prediction)
     db.session.commit()
@@ -173,8 +174,9 @@ def predict():
     })
 
 @app.route('/logout')
+@login_required
 def logout():
-    session.pop('logged_in', None)
+    logout_user()
     return redirect(url_for('login'))
 
 if __name__ == '__main__':

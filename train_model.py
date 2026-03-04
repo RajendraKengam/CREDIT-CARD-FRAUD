@@ -1,4 +1,4 @@
-import pickle
+import joblib
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -23,6 +23,5 @@ clf.fit(X, y)
 
 # 3. Save Model
 model_path = 'model.pkl'
-with open(model_path, 'wb') as f:
-    pickle.dump(clf, f)
+joblib.dump(clf, model_path)
 print(f"Model saved to {model_path}")
