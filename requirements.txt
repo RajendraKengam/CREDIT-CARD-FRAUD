@@ -1,6 +1,10 @@
 Flask
-pandas
+Flask-SQLAlchemy
+Flask-Migrate
+flasgger
+marshmallow
 scikit-learn
-flask-sqlalchemy
-numpy
 python-dotenv
+gunicorn
+pytest
+numpy

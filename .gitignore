@@ -1,0 +1,9 @@
+.venv/
+*.pyc
+__pycache__/
+instance/
+.pytest_cache/
+.env
+predictions.db
+model.pkl
+.DS_Store
