@@ -1,22 +1,24 @@
 # Fraud Detection Flask App
 
-This is a simple web application built with Flask that provides a template for a fraud detection service. It includes user authentication, a dashboard to view prediction history, and an API endpoint for making predictions.
+This is a robust web application built with Flask for fraud detection. It integrates a Machine Learning model (Random Forest), provides a Swagger API, includes user authentication, and supports Docker deployment.
 
 ## Features
 
-- **User Management**:
-    - User signup with name, email, and password.
-    - User login and logout.
-    - Session management to protect routes.
-- **Database**:
-    - Uses SQLite to store user and prediction data.
-    - Models for `User` and `Prediction` are defined using Flask-SQLAlchemy.
-- **Prediction**:
-    - A `/predict` API endpoint to submit data for fraud detection.
-    - Saves prediction requests and results to the database, linked to the user.
-- **Frontend**:
-    - Simple HTML templates for login, signup, and a main dashboard.
-    - The dashboard displays the logged-in user's name and a history of their predictions.
+- **Machine Learning**:
+    - Uses `scikit-learn` to train a Random Forest Classifier.
+    - Predicts fraud probability based on transaction amount.
+- **API Documentation**:
+    - Integrated **Swagger UI** (via Flasgger) to interactively test the API.
+- **DevOps & Deployment**:
+    - **Dockerized** application with `docker-compose` support.
+    - Production-ready server using **Gunicorn**.
+- **Backend**:
+    - **Flask-Migrate** for database schema management.
+    - **Marshmallow** for input validation.
+    - **SQLite** database for storing users and prediction history.
+- **Authentication**:
+    - User Signup/Login with password hashing.
+    - Session-based authentication for the dashboard.
 
 ## Project Structure
 
