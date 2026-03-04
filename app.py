@@ -49,15 +49,10 @@ def login():
     if request.method == 'POST':
         name = request.form['name']
         password = request.form['password']
-        # Fetch all users with this name to handle potential duplicates
-        users = User.query.filter_by(name=name).all()
-        user = None
-        for u in users:
-            if u.check_password(password):
-                user = u
-                break
+        # Fetch user by name
+        user = User.query.filter_by(name=name).first()
 
-        if user:
+        if user and user.check_password(password):
             session['logged_in'] = True
             session['user_id'] = user.id
             return redirect(url_for('index'))
@@ -146,9 +141,13 @@ def predict():
     # Prediction logic
     if model:
         # Reshape for sklearn: [[amount]]
-        prediction_result = int(model.predict([[amount]])[0])
-        # Mock probability for this example since simple classifiers might not be calibrated
-        probability = 0.95 if prediction_result == 1 else 0.10
+        features = [[amount]]
+        prediction_result = int(model.predict(features)[0])
+        
+        if hasattr(model, "predict_proba"):
+            probability = model.predict_proba(features)[0][1]
+        else:
+            probability = 0.95 if prediction_result == 1 else 0.10
     else:
         # Fallback dummy logic
         if amount > 1000:
