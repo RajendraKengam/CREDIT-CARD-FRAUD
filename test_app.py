@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: F401, pylint: disable=unused-import
 import sys
 import os
 
@@ -27,11 +27,17 @@ def test_index_redirect(client):
 def test_signup_and_login(client):
     """Test user signup and login flow."""
     # Signup
-    rv = client.post('/signup', data=dict(name='TestUser', email='test@test.com', password='password'), follow_redirects=True)
+    signup_data = {
+        'name': 'TestUser',
+        'email': 'test@test.com',
+        'password': 'password'
+    }
+    rv = client.post('/signup', data=signup_data, follow_redirects=True)
     assert rv.status_code == 200
     
     # Login
-    rv = client.post('/login', data=dict(name='TestUser', password='password'), follow_redirects=True)
+    login_data = {'name': 'TestUser', 'password': 'password'}
+    rv = client.post('/login', data=login_data, follow_redirects=True)
     assert rv.status_code == 200
     assert b'TestUser' in rv.data  # Assuming dashboard shows username
 
@@ -44,8 +50,10 @@ def test_predict_unauthenticated(client):
 def test_predict_endpoint_success_and_errors(client):
     """Test the /predict endpoint for success and various error conditions."""
     # Signup and login a user to get an authenticated session
-    client.post('/signup', data=dict(name='ApiUser', email='api@test.com', password='password'))
-    client.post('/login', data=dict(name='ApiUser', password='password'))
+    signup_data = {'name': 'ApiUser', 'email': 'api@test.com', 'password': 'password'}
+    client.post('/signup', data=signup_data)
+    login_data = {'name': 'ApiUser', 'password': 'password'}
+    client.post('/login', data=login_data)
 
     # Test a successful prediction
     rv = client.post('/predict', json={'Amount': 100.0})
